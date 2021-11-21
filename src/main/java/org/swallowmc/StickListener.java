@@ -1,10 +1,13 @@
 package org.swallowmc;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.block.data.type.Bed;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.geysermc.cumulus.CustomForm;
@@ -13,15 +16,30 @@ import org.geysermc.floodgate.api.FloodgateApi;
 
 public class StickListener implements Listener {
     FloodgateApi floodgate = FloodgateApi.getInstance();
-
+    private final BedrockCommand plugin;
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
         if (floodgate.isFloodgatePlayer(player.getUniqueId())) {
-            player.sendMessage(ChatColor.GREEN + "小提示：您可以通过使用"+
-                                ChatColor.GOLD+"木棍"+
-                                ChatColor.GREEN+"来执行命令");
+            player.sendMessage(ChatColor.GREEN + "小提示：您可以通过使用" +
+                    ChatColor.GOLD + "木棍" +
+                    ChatColor.GREEN + "来执行命令 或者 将\"/\"换成\".\"");
+            return;
+        }
+    }
+
+    public StickListener(BedrockCommand plugin) {
+        this.plugin = plugin;
+    }
+
+
+    @EventHandler
+    public void onChat(AsyncPlayerChatEvent event) {
+        String prefix = ".";
+        if (event.getMessage().startsWith(prefix)) {
+            event.setCancelled(true);
+            Bukkit.getScheduler().runTask(plugin, () -> event.getPlayer().performCommand(event.getMessage().replace(prefix, "")));
         }
     }
 
